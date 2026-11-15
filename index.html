@@ -2,715 +2,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Canteen System</title>
-
-<style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-}
-
-body {
-    background: #f1f5f9;
-    color: #1e293b;
-}
-
-header {
-    background: #123c69;
-    color: white;
-    padding: 20px;
-    text-align: center;
-}
-
-header p {
-    margin-top: 7px;
-    color: #dbeafe;
-}
-
-nav {
-    background: #fff;
-    padding: 12px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    box-shadow: 0 2px 5px #ddd;
-}
-
-button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 6px;
-    background: #1769aa;
-    color: white;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #0d4777;
-}
-
-.container {
-    max-width: 1100px;
-    margin: 25px auto;
-    padding: 15px;
-}
-
-.section {
-    display: none;
-    background: white;
-    padding: 22px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px #ddd;
-}
-
-.section.active {
-    display: block;
-}
-
-h2 {
-    margin-bottom: 18px;
-    color: #123c69;
-}
-
-h3 {
-    margin: 18px 0 10px;
-}
-
-input, select {
-    width: 100%;
-    padding: 11px;
-    margin: 7px 0 13px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-}
-
-label {
-    font-weight: bold;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
-}
-
-.stat {
-    background: #e0f2fe;
-    padding: 20px;
-    border-radius: 9px;
-}
-
-.stat h3 {
-    font-size: 25px;
-    color: #123c69;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    min-width: 550px;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background: #123c69;
-    color: white;
-}
-
-.table-wrap {
-    overflow-x: auto;
-}
-
-.food-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-
-.food-card h3 {
-    margin-top: 0;
-}
-
-.small-btn {
-    padding: 7px 10px;
-    margin: 3px;
-}
-
-.danger {
-    background: #dc2626;
-}
-
-.success {
-    background: #15803d;
-}
-
-footer {
-    text-align: center;
-    padding: 20px;
-    color: #64748b;
-}
-
-.notice {
-    background: #fef3c7;
-    padding: 12px;
-    border-radius: 6px;
-    margin: 12px 0;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Canteen Ordering</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<header>
-    <h1>SMART CANTEEN</h1>
-    <p>Food Ordering and Customer Management System</p>
-</header>
+    <header>
+        <h2>My School Canteen</h2>
+        <button id="logoutBtn" onclick="logout()" hidden>
+            Logout
+        </button>
+    </header>
 
-<nav>
-    <button onclick="showSection('home')">Dashboard</button>
-    <button onclick="showSection('students')">Students</button>
-    <button onclick="showSection('products')">Products</button>
-    <button onclick="showSection('ordering')">Order Food</button>
-    <button onclick="showSection('orders')">Manage Orders</button>
-    <button onclick="showSection('settings')">Time Settings</button>
-</nav>
+    <!-- LOGIN -->
+    <section id="loginPage" class="login-container">
+        <h1>Welcome</h1>
+        <p>Login using your email address</p>
 
-<div class="container">
+        <input type="email" id="email"
+               placeholder="Enter your email" required>
 
-<!-- DASHBOARD -->
-<section id="home" class="section active">
-    <h2>Administrator Dashboard</h2>
+        <button onclick="login()">Login</button>
+        <p id="loginMessage"></p>
+    </section>
 
-    <div class="grid">
-        <div class="stat">
-            <p>Registered Students</p>
-            <h3 id="studentCount">0</h3>
-        </div>
+    <!-- ADMIN DASHBOARD -->
+    <main id="adminPage" hidden>
 
-        <div class="stat">
-            <p>Available Products</p>
-            <h3 id="productCount">0</h3>
-        </div>
+        <h1>Administrator Dashboard</h1>
+        <p>Manage canteen products and student orders.</p>
 
-        <div class="stat">
-            <p>Total Orders</p>
-            <h3 id="orderCount">0</h3>
-        </div>
+        <section class="panel">
+            <h2>Add New Product</h2>
 
-        <div class="stat">
-            <p>Completed Orders</p>
-            <h3 id="completedCount">0</h3>
-        </div>
-    </div>
+            <input id="productName"
+                   placeholder="Product name">
 
-    <h3>Welcome, Administrator!</h3>
-    <p>Use the navigation buttons to manage your canteen.</p>
-    <div class="notice">
-        Remember to register students and products before accepting orders.
-    </div>
-</section>
+            <input id="productPrice" type="number"
+                   placeholder="Price in RWF">
 
-<!-- STUDENTS -->
-<section id="students" class="section">
-    <h2>Student Management</h2>
+            <input id="productImage"
+                   placeholder="Image URL (optional)">
 
-    <form id="studentForm">
-        <label>Student ID</label>
-        <input id="studentId" placeholder="Example: S001" required>
+            <input id="productPlace"
+                   placeholder="Serving location">
 
-        <label>Student Name</label>
-        <input id="studentName" placeholder="Enter full name" required>
+            <button onclick="addProduct()">
+                Add Product
+            </button>
+        </section>
 
-        <label>Class</label>
-        <input id="studentClass" placeholder="Example: S4A" required>
+        <section class="panel">
+            <h2>Available Products</h2>
+            <div id="adminProducts" class="products"></div>
+        </section>
 
-        <button type="submit">Register Student</button>
-    </form>
+        <section class="panel">
+            <h2>Student Orders</h2>
+            <div id="allOrders"></div>
+        </section>
 
-    <h3>Registered Students</h3>
-    <div class="table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Class</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="studentTable"></tbody>
-    </table>
-    </div>
-</section>
+    </main>
 
-<!-- PRODUCTS -->
-<section id="products" class="section">
-    <h2>Product Management</h2>
+    <!-- STUDENT PAGE -->
+    <main id="studentPage" hidden>
 
-    <form id="productForm">
-        <label>Product Name</label>
-        <input id="productName" placeholder="Example: Rice and Beans" required>
+        <h1>Student Dashboard</h1>
+        <p id="studentEmail"></p>
 
-        <label>Price (RWF)</label>
-        <input id="productPrice" type="number" min="1" placeholder="Enter price" required>
+        <section class="panel">
+            <h2>Available Canteen Products</h2>
+            <div id="studentProducts" class="products"></div>
+        </section>
 
-        <label>Available Quantity</label>
-        <input id="productQuantity" type="number" min="0" placeholder="Enter quantity" required>
+        <section class="panel">
+            <h2>My Orders</h2>
+            <div id="myOrders"></div>
+        </section>
 
-        <button type="submit">Add Product</button>
-    </form>
+    </main>
 
-    <h3>Available Products</h3>
-    <div class="table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="productTable"></tbody>
-    </table>
-    </div>
-</section>
-
-<!-- ORDERING -->
-<section id="ordering" class="section">
-    <h2>Student Food Ordering</h2>
-
-    <form id="orderForm">
-
-        <label>Select Student</label>
-        <select id="orderStudent" required>
-            <option value="">Choose student</option>
-        </select>
-
-        <label>Select Product</label>
-        <select id="orderProduct" required>
-            <option value="">Choose food</option>
-        </select>
-
-        <label>Quantity</label>
-        <input id="orderQuantity" type="number"
-               min="1" value="1" required>
-
-        <label>Collection Date</label>
-        <input id="collectionDate" type="date" required>
-
-        <label>Collection Time</label>
-        <input id="collectionTime" type="time" required>
-
-        <label>Payment Method</label>
-        <select id="paymentMethod">
-            <option value="Cash">Cash</option>
-            <option value="Mobile Money">Mobile Money</option>
-        </select>
-
-        <label>Payment Status</label>
-        <select id="paymentStatus">
-            <option value="Unpaid">Unpaid</option>
-            <option value="Paid">Paid</option>
-        </select>
-
-        <button type="submit">Submit Order</button>
-    </form>
-
-    <p id="orderMessage"></p>
-</section>
-
-<!-- ORDERS -->
-<section id="orders" class="section">
-    <h2>Order Management</h2>
-
-    <div class="table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>Order No.</th>
-                <th>Student</th>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th>Collection</th>
-                <th>Payment</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="orderTable"></tbody>
-    </table>
-    </div>
-</section>
-
-<!-- TIME SETTINGS -->
-<section id="settings" class="section">
-    <h2>Canteen Time Settings</h2>
-
-    <label>Opening Time</label>
-    <input type="time" id="openingTime">
-
-    <label>Closing Time</label>
-    <input type="time" id="closingTime">
-
-    <label>Order Deadline</label>
-    <input type="time" id="deadline">
-
-    <button onclick="saveSettings()">Save Time Settings</button>
-
-    <h3>Current Schedule</h3>
-    <p id="scheduleDisplay">No schedule saved yet.</p>
-</section>
-
-</div>
-
-<footer>
-    Smart Canteen Management System | Entrepreneurship Project
-</footer>
-
-<script>
-
-// SAVE DATA IN THE BROWSER
-let students = JSON.parse(localStorage.getItem("students")) || [];
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let orders = JSON.parse(localStorage.getItem("orders")) || [];
-let settings = JSON.parse(localStorage.getItem("settings")) || {};
-
-// SAVE FUNCTION
-function saveData() {
-    localStorage.setItem("students", JSON.stringify(students));
-    localStorage.setItem("products", JSON.stringify(products));
-    localStorage.setItem("orders", JSON.stringify(orders));
-    localStorage.setItem("settings", JSON.stringify(settings));
-}
-
-// NAVIGATION
-function showSection(id) {
-    document.querySelectorAll(".section").forEach(section => {
-        section.classList.remove("active");
-    });
-
-    document.getElementById(id).classList.add("active");
-
-    refreshAll();
-}
-
-// REGISTER STUDENT
-document.getElementById("studentForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const id = document.getElementById("studentId").value.trim();
-    const name = document.getElementById("studentName").value.trim();
-    const studentClass = document.getElementById("studentClass").value.trim();
-
-    if (students.some(s => s.id.toLowerCase() === id.toLowerCase())) {
-        alert("This student ID already exists.");
-        return;
-    }
-
-    students.push({ id, name, studentClass });
-
-    saveData();
-    this.reset();
-    refreshAll();
-
-    alert("Student registered successfully!");
-});
-
-// ADD PRODUCT
-document.getElementById("productForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const name = document.getElementById("productName").value.trim();
-    const price = Number(document.getElementById("productPrice").value);
-    const quantity = Number(document.getElementById("productQuantity").value);
-
-    products.push({
-        id: Date.now(),
-        name,
-        price,
-        quantity
-    });
-
-    saveData();
-    this.reset();
-    refreshAll();
-
-    alert("Product added successfully!");
-});
-
-// CREATE ORDER
-document.getElementById("orderForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const studentId = document.getElementById("orderStudent").value;
-    const productId = Number(document.getElementById("orderProduct").value);
-    const quantity = Number(document.getElementById("orderQuantity").value);
-    const date = document.getElementById("collectionDate").value;
-    const time = document.getElementById("collectionTime").value;
-
-    const student = students.find(s => s.id === studentId);
-    const product = products.find(p => p.id === productId);
-
-    if (!student || !product || quantity < 1) {
-        alert("Please check your order details.");
-        return;
-    }
-
-    if (product.quantity < quantity) {
-        alert("Not enough products available.");
-        return;
-    }
-
-    if (!date || !time) {
-        alert("Select a collection date and time.");
-        return;
-    }
-
-    const [open, close, deadline] = [
-        settings.openingTime,
-        settings.closingTime,
-        settings.deadline
-    ];
-
-    if (open && close && (time < open || time > close)) {
-        alert("Collection time is outside opening hours.");
-        return;
-    }
-
-    if (deadline && time < deadline) {
-        alert("Collection time is before the order deadline.");
-        return;
-    }
-
-    const total = product.price * quantity;
-
-    const order = {
-        number: orders.length + 1,
-        studentId: student.id,
-        studentName: student.name,
-        productName: product.name,
-        quantity,
-        total,
-        date,
-        time,
-        paymentMethod: document.getElementById("paymentMethod").value,
-        paymentStatus: document.getElementById("paymentStatus").value,
-        status: "Pending"
-    };
-
-    product.quantity -= quantity;
-    orders.push(order);
-
-    saveData();
-    this.reset();
-    refreshAll();
-
-    document.getElementById("orderMessage").textContent =
-        "Order submitted! Order number: " + order.number;
-
-    alert("Order successfully submitted!");
-});
-
-// DELETE STUDENT
-function deleteStudent(id) {
-    if (!confirm("Delete this student?")) return;
-
-    if (orders.some(o => o.studentId === id)) {
-        alert("This student has order records and cannot be deleted.");
-        return;
-    }
-
-    students = students.filter(s => s.id !== id);
-    saveData();
-    refreshAll();
-}
-
-// DELETE PRODUCT
-function deleteProduct(id) {
-    if (!confirm("Delete this product?")) return;
-
-    if (orders.some(o => products.find(p => p.id === id)?.name === o.productName)) {
-        alert("This product has order records and cannot be deleted.");
-        return;
-    }
-
-    products = products.filter(p => p.id !== id);
-    saveData();
-    refreshAll();
-}
-
-// UPDATE ORDER STATUS
-function updateOrder(index, status) {
-    orders[index].status = status;
-    saveData();
-    refreshAll();
-}
-
-// UPDATE PAYMENT
-function updatePayment(index, status) {
-    orders[index].paymentStatus = status;
-    saveData();
-    refreshAll();
-}
-
-// SAVE SCHEDULE
-function saveSettings() {
-    settings.openingTime = document.getElementById("openingTime").value;
-    settings.closingTime = document.getElementById("closingTime").value;
-    settings.deadline = document.getElementById("deadline").value;
-
-    if (settings.openingTime && settings.closingTime &&
-        settings.openingTime >= settings.closingTime) {
-        alert("Closing time must be after opening time.");
-        return;
-    }
-
-    if (settings.deadline && settings.openingTime &&
-        (settings.deadline < settings.openingTime ||
-         settings.deadline > settings.closingTime)) {
-        alert("Check your order deadline.");
-        return;
-    }
-
-    saveData();
-    refreshAll();
-    alert("Schedule saved!");
-}
-
-// REFRESH STUDENT TABLE
-function displayStudents() {
-    document.getElementById("studentTable").innerHTML =
-        students.map(s => `
-        <tr>
-            <td>${escapeHTML(s.id)}</td>
-            <td>${escapeHTML(s.name)}</td>
-            <td>${escapeHTML(s.studentClass)}</td>
-            <td><button class="danger small-btn"
-                onclick="deleteStudent('${escapeHTML(s.id)}')">Delete</button></td>
-        </tr>
-    `).join("");
-
-    document.getElementById("orderStudent").innerHTML =
-        '<option value="">Choose student</option>' +
-        students.map(s => `
-            <option value="${escapeHTML(s.id)}">
-                ${escapeHTML(s.name)} (${escapeHTML(s.id)})
-            </option>
-        `).join("");
-}
-
-// REFRESH PRODUCTS
-function displayProducts() {
-    document.getElementById("productTable").innerHTML =
-        products.map(p => `
-        <tr>
-            <td>${escapeHTML(p.name)}</td>
-            <td>${p.price.toLocaleString()} RWF</td>
-            <td>${p.quantity}</td>
-            <td><button class="danger small-btn"
-                onclick="deleteProduct(${p.id})">Delete</button></td>
-        </tr>
-    `).join("");
-
-    document.getElementById("orderProduct").innerHTML =
-        '<option value="">Choose food</option>' +
-        products.filter(p => p.quantity > 0).map(p => `
-            <option value="${p.id}">
-                ${escapeHTML(p.name)} - ${p.price.toLocaleString()} RWF
-                (${p.quantity} available)
-            </option>
-        `).join("");
-}
-
-// REFRESH ORDERS
-function displayOrders() {
-    document.getElementById("orderTable").innerHTML =
-        orders.map((o, i) => `
-        <tr>
-            <td>${o.number}</td>
-            <td>${escapeHTML(o.studentName)}</td>
-            <td>${escapeHTML(o.productName)}</td>
-            <td>${o.quantity}</td>
-            <td>${o.total.toLocaleString()} RWF</td>
-            <td>${escapeHTML(o.date)} ${escapeHTML(o.time)}</td>
-            <td>
-                ${escapeHTML(o.paymentMethod)}
-                <select onchange="updatePayment(${i}, this.value)">
-                    <option ${o.paymentStatus === "Unpaid" ? "selected" : ""}>Unpaid</option>
-                    <option ${o.paymentStatus === "Paid" ? "selected" : ""}>Paid</option>
-                </select>
-            </td>
-            <td>
-                <select onchange="updateOrder(${i}, this.value)">
-                    ${["Pending", "Preparing", "Ready", "Collected", "Cancelled"]
-                    .map(s => `<option ${o.status === s ? "selected" : ""}>${s}</option>`).join("")}
-                </select>
-            </td>
-            <td>${o.status === "Collected" ? "Completed" : "Active"}</td>
-        </tr>
-    `).join("");
-}
-
-// DASHBOARD
-function updateDashboard() {
-    document.getElementById("studentCount").textContent = students.length;
-    document.getElementById("productCount").textContent = products.length;
-    document.getElementById("orderCount").textContent = orders.length;
-    document.getElementById("completedCount").textContent =
-        orders.filter(o => o.status === "Collected").length;
-}
-
-// DISPLAY SAVED SETTINGS
-function displaySettings() {
-    document.getElementById("openingTime").value = settings.openingTime || "";
-    document.getElementById("closingTime").value = settings.closingTime || "";
-    document.getElementById("deadline").value = settings.deadline || "";
-
-    document.getElementById("scheduleDisplay").textContent =
-        settings.openingTime
-        ? `Opening: ${settings.openingTime} | Closing: ${settings.closingTime} | Deadline: ${settings.deadline}`
-        : "No schedule saved yet.";
-}
-
-// BASIC HTML ESCAPING
-function escapeHTML(value) {
-    return String(value).replace(/[&<>"']/g, c => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[c]);
-}
-
-// REFRESH EVERYTHING
-function refreshAll() {
-    displayStudents();
-    displayProducts();
-    displayOrders();
-    updateDashboard();
-    displaySettings();
-}
-
-refreshAll();
-
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
