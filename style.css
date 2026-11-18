@@ -20,8 +20,28 @@ header {
     align-items: center;
 }
 
-header h2 {
-    font-size: 23px;
+header button {
+    background: #e74c3c;
+}
+
+.auth-box {
+    width: 90%;
+    max-width: 420px;
+    margin: 70px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px #ddd;
+    text-align: center;
+}
+
+.auth-box h1 {
+    color: #173b65;
+    margin-bottom: 15px;
+}
+
+.auth-box p {
+    margin: 15px 0;
 }
 
 main {
@@ -30,24 +50,17 @@ main {
     margin: 30px auto;
 }
 
-h1 {
-    margin-bottom: 15px;
+main h1 {
     color: #173b65;
+    margin-bottom: 12px;
 }
 
-h2 {
-    margin-bottom: 15px;
-}
-
-.login-container {
-    width: 90%;
-    max-width: 400px;
-    margin: 100px auto;
-    padding: 30px;
+.panel {
     background: white;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 3px 15px #ddd;
+    margin: 25px 0;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #ddd;
 }
 
 input {
@@ -65,29 +78,32 @@ button {
     padding: 12px 18px;
     border-radius: 6px;
     cursor: pointer;
-    margin-top: 8px;
+    margin: 6px 0;
 }
 
 button:hover {
     background: #104b7d;
 }
 
-.panel {
-    background: white;
-    margin: 25px 0;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px #ddd;
+.link-btn {
+    background: transparent;
+    color: #1769aa;
+    padding: 5px;
+}
+
+.link-btn:hover {
+    background: #edf4fb;
 }
 
 .products {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns:
+        repeat(auto-fit, minmax(210px, 1fr));
     gap: 20px;
 }
 
 .product-card {
-    background: #fff;
+    background: white;
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 9px;
@@ -95,7 +111,7 @@ button:hover {
 
 .product-card img {
     width: 100%;
-    height: 140px;
+    height: 150px;
     object-fit: cover;
     border-radius: 7px;
 }
@@ -105,12 +121,17 @@ button:hover {
 }
 
 .product-card p {
-    margin: 7px 0;
+    margin: 8px 0;
 }
 
 .order {
     border-bottom: 1px solid #ddd;
     padding: 15px 0;
+}
+
+.status {
+    font-weight: bold;
+    color: #d97706;
 }
 
 [hidden] {
@@ -122,7 +143,7 @@ button:hover {
         width: 95%;
     }
 
-    .login-container {
-        margin-top: 60px;
+    .auth-box {
+        margin-top: 40px;
     }
 }
