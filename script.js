@@ -1,5 +1,4 @@
 
-
 import { initializeApp } from
 "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 
@@ -9,7 +8,9 @@ import {
     signInWithEmailAndPassword,
     sendPasswordResetEmail,
     signOut,
-    onAuthStateChanged
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence
 } from
 "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
@@ -17,6 +18,8 @@ import {
     getFirestore,
     collection,
     addDoc,
+    setDoc,
+    getDoc,
     deleteDoc,
     doc,
     updateDoc,
@@ -26,6 +29,7 @@ import {
     serverTimestamp
 } from
 "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
+
 
 // 1. FIREBASE CONFIGURATION
 const firebaseConfig = {
@@ -37,188 +41,152 @@ const firebaseConfig = {
     appId: "YOUR_APP_ID"
 };
 
-// 2. CONNECT FIREBASE
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 3. ADMIN UID
-// Replace this after creating your admin account.
-const ADMIN_UID = "YOUR_ADMIN_UID";
 
-let currentUser = null;
-let stopProducts = null;
-let stopOrders = null;
+// 2. YOUR ADMINISTRATOR UID
+const ADMIN_UID = "PASTE_YOUR_ADMIN_UID_HERE";
 
-const $ = id => document.getElementById(id);
 
-// 4. SHOW A PAGE
-function showPage(page) {
-    ["loginPage", "registerPage",
-     "adminPage", "studentPage"].forEach(id => {
-        $(id).hidden = id !== page;
+// 3. REMEMBER LOGIN ON THIS BROWSER
+await setPersistence(auth, browserLocalPersistence);
+
+
+// 4. PAGE MANAGEMENT
+const pages = [
+    "loginPage",
+    "registerPage",
+    "adminPage",
+    "studentPage"
+];
+
+function showPage(pageId) {
+    pages.forEach(id => {
+        document.getElementById(id).classList.add("hidden");
     });
+
+    document.getElementById(pageId).classList.remove("hidden");
 }
 
-// 5. SWITCH BETWEEN LOGIN AND REGISTER
-$("showRegister").onclick = () => {
-    $("registerMessage").textContent = "";
+function showMessage(id, message, success = false) {
+    const element = document.getElementById(id);
+    element.textContent = message;
+    element.className = success ? "message success" : "message";
+}
+
+
+// 5. SWITCH BETWEEN LOGIN AND REGISTRATION
+document.getElementById("showRegister").onclick = event => {
+    event.preventDefault();
     showPage("registerPage");
 };
 
-$("showLogin").onclick = () => {
-    $("loginMessage").textContent = "";
+document.getElementById("showLogin").onclick = event => {
+    event.preventDefault();
     showPage("loginPage");
 };
 
-// 6. CREATE STUDENT ACCOUNT
-$("registerForm").addEventListener("submit", async event => {
+
+// 6. STUDENT REGISTRATION
+document.getElementById("registerForm").addEventListener("submit", async event => {
     event.preventDefault();
 
-    const name = $("studentName").value.trim();
-    const email = $("registerEmail").value.trim();
-    const password = $("registerPassword").value;
-    const confirm = $("confirmPassword").value;
+    const name = document.getElementById("studentName").value.trim();
+    const email = document.getElementById("registerEmail").value.trim();
+    const password = document.getElementById("registerPassword").value;
+    const confirm = document.getElementById("confirmPassword").value;
 
     if (password !== confirm) {
-        $("registerMessage").textContent =
-            "Passwords do not match.";
-        return;
-    }
-
-    if (password.length < 6) {
-        $("registerMessage").textContent =
-            "Password must have at least 6 characters.";
+        showMessage("registerMessage", "Passwords do not match.");
         return;
     }
 
     try {
-        $("registerMessage").textContent = "Creating account...";
-
-        const credential =
-            await createUserWithEmailAndPassword(
-                auth, email, password
-            );
-
-        await updateDoc(
-            doc(db, "users", credential.user.uid),
-            {
-                name: name,
-                email: email,
-                role: "student"
-            }
-        ).catch(async () => {
-            const { setDoc } = await import(
-                "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js"
-            );
-
-            await setDoc(
-                doc(db, "users", credential.user.uid),
-                {
-                    name: name,
-                    email: email,
-                    role: "student"
-                }
-            );
-        });
-
-        alert("Your account has been created!");
-        $("registerForm").reset();
-
-    } catch (error) {
-        $("registerMessage").textContent =
-            error.message;
-    }
-});
-
-// 7. STUDENT OR ADMIN LOGIN
-$("loginForm").addEventListener("submit", async event => {
-    event.preventDefault();
-
-    const email = $("loginEmail").value.trim();
-    const password = $("loginPassword").value;
-
-    try {
-        $("loginMessage").textContent = "Logging in...";
-
-        await signInWithEmailAndPassword(
+        const credential = await createUserWithEmailAndPassword(
             auth, email, password
         );
 
+        await setDoc(doc(db, "users", credential.user.uid), {
+            name: name,
+            email: email,
+            role: "student",
+            status: "approved"
+        });
+
+        showMessage("registerMessage", "Account created successfully!", true);
+
+        // Firebase automatically signs in the new student.
     } catch (error) {
-        $("loginMessage").textContent =
-            "Login failed: " + error.message;
+        showMessage("registerMessage", error.message);
     }
 });
 
-// 8. PASSWORD RESET
-$("forgotPassword").onclick = async () => {
-    const email = $("loginEmail").value.trim();
+
+// 7. LOGIN
+document.getElementById("loginForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        showMessage("loginMessage", "Login successful!", true);
+    } catch (error) {
+        showMessage("loginMessage", error.message);
+    }
+});
+
+
+// 8. FORGOT PASSWORD
+document.getElementById("forgotPassword").onclick = async event => {
+    event.preventDefault();
+
+    const email = document.getElementById("loginEmail").value.trim();
 
     if (!email) {
-        alert("Enter your email address first.");
+        showMessage("loginMessage", "Enter your email first.");
         return;
     }
 
     try {
         await sendPasswordResetEmail(auth, email);
-        alert("Password reset email sent.");
+        showMessage("loginMessage", "Password reset email sent.", true);
     } catch (error) {
-        alert(error.message);
+        showMessage("loginMessage", error.message);
     }
 };
 
-// 9. CHECK WHO LOGGED IN
-onAuthStateChanged(auth, async user => {
-    if (stopProducts) stopProducts();
-    if (stopOrders) stopOrders();
 
-    stopProducts = null;
-    stopOrders = null;
+// 9. LOGOUT
+document.getElementById("adminLogout").onclick = () => signOut(auth);
+document.getElementById("studentLogout").onclick = () => signOut(auth);
 
-    currentUser = user;
 
-    $("logoutBtn").hidden = !user;
+// 10. ADD PRODUCT (ADMIN ONLY)
+document.getElementById("productForm").addEventListener("submit", async event => {
+    event.preventDefault();
 
-    if (!user) {
-        showPage("loginPage");
+    if (auth.currentUser?.uid !== ADMIN_UID) {
+        showMessage("productMessage", "Administrator access required.");
         return;
     }
 
-    if (user.uid === ADMIN_UID) {
-        showPage("adminPage");
-        loadProducts("admin");
-        loadOrders(true);
-    } else {
-        showPage("studentPage");
-        $("studentWelcome").textContent =
-            "Welcome, " + user.email;
-        loadProducts("student");
-        loadOrders(false);
-    }
-});
+    const name = document.getElementById("productName").value.trim();
+    const price = Number(document.getElementById("productPrice").value);
+    const image = document.getElementById("productImage").value.trim();
+    const place = document.getElementById("productPlace").value.trim();
 
-// 10. LOGOUT
-$("logoutBtn").onclick = async () => {
-    await signOut(auth);
-};
-
-// 11. ADMIN ADDS PRODUCTS
-$("productForm").addEventListener("submit", async event => {
-    event.preventDefault();
-
-    if (!currentUser || currentUser.uid !== ADMIN_UID) {
-        return alert("Administrator access required.");
+    if (!name || !place || !Number.isFinite(price) || price <= 0) {
+        showMessage("productMessage", "Enter valid product details.");
+        return;
     }
 
-    const name = $("productName").value.trim();
-    const price = Number($("productPrice").value);
-    const image = $("productImage").value.trim();
-    const place = $("productPlace").value.trim();
-
-    if (!name || !Number.isFinite(price) ||
-        price <= 0 || !place) {
-        return alert("Enter valid product details.");
+    if (image && !image.startsWith("https://")) {
+        showMessage("productMessage", "Use an HTTPS image URL.");
+        return;
     }
 
     try {
@@ -230,217 +198,271 @@ $("productForm").addEventListener("submit", async event => {
             createdAt: serverTimestamp()
         });
 
-        $("productForm").reset();
-        alert("Product added successfully!");
-
+        event.target.reset();
+        showMessage("productMessage", "Product added successfully!", true);
     } catch (error) {
-        alert(error.message);
+        showMessage("productMessage", error.message);
     }
 });
 
-// 12. DISPLAY PRODUCTS
+
+// 11. DISPLAY PRODUCTS
+let stopProducts = null;
+
 function loadProducts(role) {
-    stopProducts = onSnapshot(
-        collection(db, "products"),
-        snapshot => {
-            const products = snapshot.docs.map(d => ({
-                id: d.id,
-                ...d.data()
-            }));
+    if (stopProducts) stopProducts();
 
-            const container = role === "admin"
-                ? $("adminProducts")
-                : $("studentProducts");
+    stopProducts = onSnapshot(collection(db, "products"), snapshot => {
+        const adminContainer = document.getElementById("adminProducts");
+        const studentContainer = document.getElementById("studentProducts");
 
-            container.replaceChildren();
+        adminContainer.replaceChildren();
+        studentContainer.replaceChildren();
 
-            if (!products.length) {
-                container.textContent =
-                    "No products available yet.";
-                return;
-            }
+        snapshot.forEach(productDoc => {
+            const product = productDoc.data();
+            const id = productDoc.id;
 
-            products.forEach(product => {
+            if (role === "admin") {
                 const card = document.createElement("div");
                 card.className = "product-card";
+
+                const title = document.createElement("h4");
+                title.textContent = product.name;
+
+                const price = document.createElement("p");
+                price.textContent = `Price: ${product.price} RWF`;
+
+                const place = document.createElement("p");
+                place.textContent = `Location: ${product.place}`;
+
+                card.append(title, price, place);
 
                 if (product.image) {
                     const img = document.createElement("img");
                     img.src = product.image;
                     img.alt = product.name;
                     img.referrerPolicy = "no-referrer";
-                    card.appendChild(img);
+                    card.prepend(img);
                 }
 
-                const title = document.createElement("h3");
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete Product";
+                deleteButton.className = "delete-button";
+
+                deleteButton.onclick = async () => {
+                    if (confirm(`Delete ${product.name}?`)) {
+                        await deleteDoc(doc(db, "products", id));
+                    }
+                };
+
+                card.append(deleteButton);
+                adminContainer.append(card);
+            } else {
+                const card = document.createElement("div");
+                card.className = "product-card";
+
+                const title = document.createElement("h4");
                 title.textContent = product.name;
 
                 const price = document.createElement("p");
-                price.textContent =
-                    "Price: " + product.price.toLocaleString() + " RWF";
+                price.textContent = `Price: ${product.price} RWF`;
 
                 const place = document.createElement("p");
-                place.textContent =
-                    "Serving location: " + product.place;
+                place.textContent = `Serving location: ${product.place}`;
 
-                card.append(title, price, place);
+                const quantity = document.createElement("input");
+                quantity.type = "number";
+                quantity.min = "1";
+                quantity.max = "20";
+                quantity.value = "1";
+                quantity.setAttribute("aria-label", "Quantity");
 
-                if (role === "admin") {
-                    const remove = document.createElement("button");
-                    remove.textContent = "Delete Product";
+                const delivery = document.createElement("input");
+                delivery.type = "text";
+                delivery.placeholder = "Your delivery location";
+                delivery.required = true;
 
-                    remove.onclick = () =>
-                        deleteProduct(product.id);
+                const orderButton = document.createElement("button");
+                orderButton.textContent = "Place Order";
 
-                    card.appendChild(remove);
+                orderButton.onclick = async () => {
+                    const qty = Number(quantity.value);
+                    const deliveryPlace = delivery.value.trim();
 
-                } else {
-                    const quantity = document.createElement("input");
-                    quantity.type = "number";
-                    quantity.min = "1";
-                    quantity.value = "1";
-                    quantity.placeholder = "Quantity";
+                    if (!Number.isInteger(qty) || qty < 1 || qty > 20) {
+                        alert("Choose a quantity from 1 to 20.");
+                        return;
+                    }
 
-                    const delivery = document.createElement("input");
-                    delivery.placeholder = "Your delivery place";
+                    if (!deliveryPlace) {
+                        alert("Enter your delivery location.");
+                        return;
+                    }
 
-                    const orderButton = document.createElement("button");
-                    orderButton.textContent = "Order Now";
+                    try {
+                        const user = auth.currentUser;
 
-                    orderButton.onclick = () =>
-                        placeOrder(product, quantity.value,
-                                   delivery.value);
+                        if (!user) {
+                            alert("Please log in again.");
+                            return;
+                        }
 
-                    card.append(quantity, delivery, orderButton);
-                }
+                        await addDoc(collection(db, "orders"), {
+                            uid: user.uid,
+                            email: user.email,
+                            productId: id,
+                            productName: product.name,
+                            quantity: qty,
+                            price: product.price,
+                            total: product.price * qty,
+                            deliveryPlace,
+                            status: "Pending",
+                            createdAt: serverTimestamp()
+                        });
 
-                container.appendChild(card);
-            });
-        },
-        error => alert(error.message)
-    );
-}
+                        alert("Your order has been placed!");
+                        delivery.value = "";
+                        quantity.value = "1";
+                    } catch (error) {
+                        alert("Could not place order: " + error.message);
+                    }
+                };
 
-// 13. DELETE PRODUCT
-async function deleteProduct(id) {
-    if (!currentUser || currentUser.uid !== ADMIN_UID) return;
-
-    if (!confirm("Are you sure you want to delete this product?"))
-        return;
-
-    try {
-        await deleteDoc(doc(db, "products", id));
-    } catch (error) {
-        alert(error.message);
-    }
-}
-
-// 14. STUDENTS PLACE ORDERS
-async function placeOrder(product, quantity, delivery) {
-    if (!currentUser || currentUser.uid === ADMIN_UID) return;
-
-    const qty = Number(quantity);
-    const place = delivery.trim();
-
-    if (!Number.isInteger(qty) || qty < 1 || !place) {
-        alert("Enter a valid quantity and delivery place.");
-        return;
-    }
-
-    try {
-        await addDoc(collection(db, "orders"), {
-            uid: currentUser.uid,
-            email: currentUser.email,
-            product: product.name,
-            productId: product.id,
-            quantity: qty,
-            price: product.price,
-            total: product.price * qty,
-            deliveryPlace: place,
-            status: "Pending",
-            createdAt: serverTimestamp()
+                card.append(title, price, place, quantity, delivery, orderButton);
+                studentContainer.append(card);
+            }
         });
-
-        alert("Your order was submitted successfully!");
-
-    } catch (error) {
-        alert(error.message);
-    }
+    }, error => {
+        console.error("Product loading error:", error);
+    });
 }
 
-// 15. DISPLAY ORDERS
-function loadOrders(isAdmin) {
-    const ordersRef = collection(db, "orders");
 
-    const ordersQuery = isAdmin
-        ? ordersRef
-        : query(ordersRef, where("uid", "==", currentUser.uid));
+// 12. DISPLAY ORDERS
+let stopOrders = null;
+
+function loadOrders(isAdmin) {
+    if (stopOrders) stopOrders();
+
+    const user = auth.currentUser;
+    let ordersQuery;
+
+    if (isAdmin) {
+        ordersQuery = collection(db, "orders");
+    } else {
+        ordersQuery = query(
+            collection(db, "orders"),
+            where("uid", "==", user.uid)
+        );
+    }
+
+    const container = document.getElementById(
+        isAdmin ? "allOrders" : "myOrders"
+    );
 
     stopOrders = onSnapshot(ordersQuery, snapshot => {
-        const container = isAdmin
-            ? $("allOrders")
-            : $("myOrders");
-
         container.replaceChildren();
 
         if (snapshot.empty) {
-            container.textContent = "No orders found.";
+            container.textContent = "No orders yet.";
             return;
         }
 
         snapshot.forEach(orderDoc => {
             const order = orderDoc.data();
             const card = document.createElement("div");
-            card.className = "order";
-
-            const title = document.createElement("h3");
-            title.textContent = order.product;
+            card.className = "order-card";
 
             const details = document.createElement("p");
             details.textContent =
-                "Student: " + order.email +
-                " | Quantity: " + order.quantity +
-                " | Total: " + order.total.toLocaleString() +
-                " RWF";
+                `Product: ${order.productName} | Quantity: ${order.quantity} | ` +
+                `Total: ${order.total} RWF | Delivery: ${order.deliveryPlace} | ` +
+                `Status: ${order.status}`;
 
-            const delivery = document.createElement("p");
-            delivery.textContent =
-                "Delivery: " + order.deliveryPlace;
-
-            const status = document.createElement("p");
-            status.textContent = "Status: " + order.status;
-            status.className = "status";
-
-            card.append(title, details, delivery, status);
+            card.append(details);
 
             if (isAdmin) {
-                const select = document.createElement("select");
+                const email = document.createElement("p");
+                email.textContent = `Student: ${order.email}`;
+                card.prepend(email);
+
+                const status = document.createElement("select");
 
                 ["Pending", "Preparing", "Ready", "Delivered", "Cancelled"]
                     .forEach(value => {
                         const option = document.createElement("option");
                         option.value = value;
                         option.textContent = value;
-                        select.appendChild(option);
+                        option.selected = order.status === value;
+                        status.append(option);
                     });
 
-                select.value = order.status;
-
-                select.onchange = async () => {
+                status.onchange = async () => {
                     try {
-                        await updateDoc(
-                            doc(db, "orders", orderDoc.id),
-                            { status: select.value }
-                        );
+                        await updateDoc(doc(db, "orders", orderDoc.id), {
+                            status: status.value
+                        });
                     } catch (error) {
-                        alert(error.message);
+                        alert("Could not update order: " + error.message);
                     }
                 };
 
-                card.appendChild(select);
+                card.append(status);
             }
 
-            container.appendChild(card);
+            container.append(card);
         });
-    }, error => alert(error.message));
+    }, error => {
+        console.error("Order loading error:", error);
+    });
 }
+
+
+// 13. CHECK WHO IS LOGGED IN
+onAuthStateChanged(auth, async user => {
+    if (stopProducts) stopProducts();
+    if (stopOrders) stopOrders();
+
+    if (!user) {
+        showPage("loginPage");
+        return;
+    }
+
+    try {
+        if (user.uid === ADMIN_UID) {
+            showPage("adminPage");
+            loadProducts("admin");
+            loadOrders(true);
+            return;
+        }
+
+        const profile = await getDoc(doc(db, "users", user.uid));
+
+        if (!profile.exists()) {
+            alert("Student profile not found. Please contact the administrator.");
+            await signOut(auth);
+            return;
+        }
+
+        const student = profile.data();
+
+        if (student.role !== "student" || student.status !== "approved") {
+            alert("Student account is not configured correctly.");
+            await signOut(auth);
+            return;
+        }
+
+        showPage("studentPage");
+
+        document.getElementById("studentWelcome").textContent =
+            `Welcome, ${student.name}`;
+
+        loadProducts("student");
+        loadOrders(false);
+
+    } catch (error) {
+        console.error(error);
+        alert("Could not load your dashboard. Please try again.");
+    }
+});
