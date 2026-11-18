@@ -4,86 +4,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Canteen Ordering</title>
+    <title>School Canteen Ordering</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <h2>My School Canteen</h2>
-        <button id="logoutBtn" onclick="logout()" hidden>
-            Logout
+<header>
+    <h2>School Canteen</h2>
+    <button id="logoutBtn" hidden>Logout</button>
+</header>
+
+<!-- LOGIN -->
+<section id="loginPage" class="auth-box">
+    <h1>Welcome Back</h1>
+    <p>Login to your canteen account</p>
+
+    <form id="loginForm">
+        <input type="email" id="loginEmail"
+               placeholder="Email address" required>
+
+        <input type="password" id="loginPassword"
+               placeholder="Password" required>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <button id="forgotPassword" class="link-btn">
+        Forgot password?
+    </button>
+
+    <p>Don't have an account?
+        <button id="showRegister" class="link-btn">
+            Create account
         </button>
-    </header>
+    </p>
 
-    <!-- LOGIN -->
-    <section id="loginPage" class="login-container">
-        <h1>Welcome</h1>
-        <p>Login using your email address</p>
+    <p id="loginMessage"></p>
+</section>
 
-        <input type="email" id="email"
-               placeholder="Enter your email" required>
+<!-- REGISTER -->
+<section id="registerPage" class="auth-box" hidden>
+    <h1>Create Student Account</h1>
 
-        <button onclick="login()">Login</button>
-        <p id="loginMessage"></p>
+    <form id="registerForm">
+        <input type="text" id="studentName"
+               placeholder="Full name" required>
+
+        <input type="email" id="registerEmail"
+               placeholder="Email address" required>
+
+        <input type="password" id="registerPassword"
+               placeholder="Create password (at least 6 characters)"
+               minlength="6" required>
+
+        <input type="password" id="confirmPassword"
+               placeholder="Confirm password" required>
+
+        <button type="submit">Create Account</button>
+    </form>
+
+    <p>Already have an account?
+        <button id="showLogin" class="link-btn">
+            Login
+        </button>
+    </p>
+
+    <p id="registerMessage"></p>
+</section>
+
+<!-- ADMIN DASHBOARD -->
+<main id="adminPage" hidden>
+
+    <h1>Administrator Dashboard</h1>
+    <p>Manage your canteen products and orders.</p>
+
+    <section class="panel">
+        <h2>Add Product</h2>
+
+        <form id="productForm">
+            <input type="text" id="productName"
+                   placeholder="Product name" required>
+
+            <input type="number" id="productPrice"
+                   placeholder="Price in RWF" min="1" required>
+
+            <input type="url" id="productImage"
+                   placeholder="Product image URL (optional)">
+
+            <input type="text" id="productPlace"
+                   placeholder="Serving location" required>
+
+            <button type="submit">Add Product</button>
+        </form>
     </section>
 
-    <!-- ADMIN DASHBOARD -->
-    <main id="adminPage" hidden>
+    <section class="panel">
+        <h2>Manage Products</h2>
+        <div id="adminProducts" class="products"></div>
+    </section>
 
-        <h1>Administrator Dashboard</h1>
-        <p>Manage canteen products and student orders.</p>
+    <section class="panel">
+        <h2>All Student Orders</h2>
+        <div id="allOrders"></div>
+    </section>
 
-        <section class="panel">
-            <h2>Add New Product</h2>
+</main>
 
-            <input id="productName"
-                   placeholder="Product name">
+<!-- STUDENT DASHBOARD -->
+<main id="studentPage" hidden>
 
-            <input id="productPrice" type="number"
-                   placeholder="Price in RWF">
+    <h1>Student Dashboard</h1>
+    <p id="studentWelcome"></p>
 
-            <input id="productImage"
-                   placeholder="Image URL (optional)">
+    <section class="panel">
+        <h2>Available Products</h2>
+        <div id="studentProducts" class="products"></div>
+    </section>
 
-            <input id="productPlace"
-                   placeholder="Serving location">
+    <section class="panel">
+        <h2>My Orders</h2>
+        <div id="myOrders"></div>
+    </section>
 
-            <button onclick="addProduct()">
-                Add Product
-            </button>
-        </section>
+</main>
 
-        <section class="panel">
-            <h2>Available Products</h2>
-            <div id="adminProducts" class="products"></div>
-        </section>
+<script type="module" src="script.js"></script>
 
-        <section class="panel">
-            <h2>Student Orders</h2>
-            <div id="allOrders"></div>
-        </section>
-
-    </main>
-
-    <!-- STUDENT PAGE -->
-    <main id="studentPage" hidden>
-
-        <h1>Student Dashboard</h1>
-        <p id="studentEmail"></p>
-
-        <section class="panel">
-            <h2>Available Canteen Products</h2>
-            <div id="studentProducts" class="products"></div>
-        </section>
-
-        <section class="panel">
-            <h2>My Orders</h2>
-            <div id="myOrders"></div>
-        </section>
-
-    </main>
-
-    <script src="script.js"></script>
 </body>
 </html>
